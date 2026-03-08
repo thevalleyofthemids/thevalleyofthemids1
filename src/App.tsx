@@ -318,7 +318,13 @@ const SWAPS = [
 // --- Components ---
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>('landing');
+  const [onboardingComplete, setOnboardingComplete] = useState(() => {
+    return localStorage.getItem('onboardingComplete') === 'true';
+  });
+  const [screen, setScreen] = useState<Screen>(() => {
+    const onboarding = localStorage.getItem('onboardingComplete') === 'true';
+    return onboarding ? 'selector' : 'profile';
+  });
   const [lang, setLang] = useState<Language>(() => {
     const saved = localStorage.getItem('lang');
     return (saved as Language) || 'en';
@@ -329,9 +335,6 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('lang', lang);
   }, [lang]);
-  const [onboardingComplete, setOnboardingComplete] = useState(() => {
-    return localStorage.getItem('onboardingComplete') === 'true';
-  });
   const [caloriesConsumed, setCaloriesConsumed] = useState(() => {
     return Number(localStorage.getItem('caloriesConsumed')) || 0;
   });
@@ -479,14 +482,6 @@ Selected Swaps: ${activeSwaps.map(id => SWAPS.find(s => s.id === id)?.labelKey ?
   return (
     <div className="min-h-screen bg-[#f6f8f6] font-display">
       <AnimatePresence mode="wait">
-        {screen === 'landing' && (
-          <LandingScreen 
-            onStart={() => setScreen(onboardingComplete ? 'selector' : 'profile')} 
-            lang={lang}
-            setLang={setLang}
-            t={t}
-          />
-        )}
         {screen === 'profile' && (
           <ProfileScreen 
             metrics={metrics} 
@@ -543,8 +538,8 @@ Selected Swaps: ${activeSwaps.map(id => SWAPS.find(s => s.id === id)?.labelKey ?
             <NavButton 
               icon={<Home size={24} />} 
               label={t.home} 
-              active={screen === 'landing'} 
-              onClick={() => setScreen('landing')} 
+              active={screen === 'selector'} 
+              onClick={() => setScreen('selector')} 
             />
             <NavButton 
               icon={<Activity size={24} />} 
