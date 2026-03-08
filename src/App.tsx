@@ -58,53 +58,277 @@ interface RecipeResult {
 }
 
 type Screen = 'landing' | 'profile' | 'profile_summary' | 'selector' | 'result' | 'history';
+type Language = 'en' | 'cn' | 'bm';
+
+const TRANSLATIONS = {
+  en: {
+    heritage_title: <>Our heritage is <br /> written in <br /><span className="text-primary italic">our recipes</span></>,
+    heritage_subtitle: <>Every <span className="italic font-medium">makan</span> is a story of home, love, and tradition.</>,
+    begin_story: "Begin Your Story",
+    dietary_requirements: "Dietary Requirements",
+    personalize_profile: "Let's personalize your health profile.",
+    health_profile: "Health Profile",
+    height: "Height (cm)",
+    weight: "Weight (kg)",
+    current_bmi: "Current BMI",
+    daily_calorie_goal: "Daily Calorie Goal",
+    next_meal_selection: "Next: Meal Selection",
+    profile_confirmed: "Profile Confirmed",
+    blueprint_ready: "Your health blueprint is ready.",
+    calculated_bmi: "Calculated BMI",
+    lets_eat: "Let's Eat",
+    what_to_eat: "What would you like to eat today?",
+    search_placeholder: "Search for Malaysian dishes...",
+    cant_decide: "Can't Decide?",
+    picked_favorite: "We've picked a heritage favorite for you!",
+    customize_meal: "Customize This Meal",
+    logged_meals: "Logged Meals",
+    no_meals_logged: "No meals logged yet.",
+    find_first_meal: "Find your first meal",
+    architecting_meal: "Architecting Your Meal...",
+    ai_note: "Architect's Note",
+    ingredients: "Ingredients",
+    cooking_steps: "Cooking Steps",
+    log_as_meal: "Log as Lunch/Dinner",
+    calories: "Calories",
+    protein: "Protein",
+    fiber: "Fiber",
+    fat: "Fat",
+    carbs: "Carbs",
+    portion_control: "Portion Control",
+    smart_swaps: "Smart Swaps",
+    ai_recalculation: "AI Recalculation Details",
+    home: "Home",
+    plans: "Plans",
+    profile: "Profile",
+    underweight: "Underweight",
+    healthy: "Healthy",
+    overweight: "Overweight",
+    obese: "Obese",
+    no_dishes_found: "No dishes found matching",
+    new_selection: "New Selection",
+    ai_loading_note: "Our AI nutritionist is balancing your macros and preserving heritage flavors.",
+    swap_brown_rice: "Brown Rice",
+    swap_no_santan: "No Santan",
+    swap_low_sodium: "Low Sodium",
+    swap_extra_protein: "Extra Protein",
+    swap_cauliflower_rice: "Cauliflower Rice",
+    swap_air_fried: "Air Fried",
+    dish_nasi_lemak: "Nasi Lemak Ayam",
+    dish_sarawak_laksa: "Sarawak Laksa",
+    dish_satay_chicken: "Satay Chicken",
+    dish_mee_goreng: "Mee Goreng Mamak",
+    tag_high_protein: "High Protein",
+    tag_low_fat: "Low Fat Swap",
+    tag_lean_meat: "Lean Meat",
+    tag_less_oil: "Less Oil",
+    more: "more",
+    kcal_per_day: "kcal/day",
+    app_name: "Makan Sejahtera",
+    app_tagline: "Where Health Meets Heritage",
+    min_kcal: "1,200 kcal",
+    max_kcal: "4,000 kcal",
+    default_portion_desc: "Balanced portioning based on BMI.",
+    default_swaps_desc: "Heritage-friendly healthy alternatives."
+  },
+  cn: {
+    heritage_title: <>我们的传统 <br /> 写在 <br /><span className="text-primary italic">食谱里</span></>,
+    heritage_subtitle: <>每一餐 <span className="italic font-medium">makan</span> 都是关于家、爱和传统的故事。</>,
+    begin_story: "开始您的故事",
+    dietary_requirements: "饮食需求",
+    personalize_profile: "让我们个性化您的健康档案。",
+    health_profile: "健康档案",
+    height: "身高 (厘米)",
+    weight: "体重 (公斤)",
+    current_bmi: "当前 BMI",
+    daily_calorie_goal: "每日卡路里目标",
+    next_meal_selection: "下一步：选择餐点",
+    profile_confirmed: "档案已确认",
+    blueprint_ready: "您的健康蓝图已准备就绪。",
+    calculated_bmi: "计算出的 BMI",
+    lets_eat: "开饭了",
+    what_to_eat: "今天想吃什么？",
+    search_placeholder: "搜索马来西亚美食...",
+    cant_decide: "无法决定？",
+    picked_favorite: "我们为您挑选了一个传统最爱！",
+    customize_meal: "个性化这餐",
+    logged_meals: "记录的餐点",
+    no_meals_logged: "尚未记录任何餐点。",
+    find_first_meal: "寻找您的第一餐",
+    architecting_meal: "正在构建您的餐点...",
+    ai_note: "建筑师笔记",
+    ingredients: "配料",
+    cooking_steps: "烹饪步骤",
+    log_as_meal: "记录为午餐/晚餐",
+    calories: "卡路里",
+    protein: "蛋白质",
+    fiber: "纤维",
+    fat: "脂肪",
+    carbs: "碳水化合物",
+    portion_control: "分量控制",
+    smart_swaps: "智能替换",
+    ai_recalculation: "AI 重新计算详情",
+    home: "首页",
+    plans: "计划",
+    profile: "个人资料",
+    underweight: "体重过轻",
+    healthy: "健康",
+    overweight: "超重",
+    obese: "肥胖",
+    no_dishes_found: "未找到匹配的菜肴",
+    new_selection: "重新选择",
+    ai_loading_note: "我们的 AI 营养师正在平衡您的宏量营养素并保留传统风味。",
+    swap_brown_rice: "糙米",
+    swap_no_santan: "无椰浆",
+    swap_low_sodium: "低钠",
+    swap_extra_protein: "额外蛋白质",
+    swap_cauliflower_rice: "花椰菜米",
+    swap_air_fried: "气炸",
+    dish_nasi_lemak: "椰浆饭配炸鸡",
+    dish_sarawak_laksa: "砂拉越叻沙",
+    dish_satay_chicken: "沙爹鸡肉",
+    dish_mee_goreng: "印度炒面",
+    tag_high_protein: "高蛋白质",
+    tag_low_fat: "低脂替换",
+    tag_lean_meat: "瘦肉",
+    tag_less_oil: "少油",
+    more: "更多",
+    kcal_per_day: "千卡/天",
+    app_name: "Makan Sejahtera",
+    app_tagline: "健康与传统的交汇点",
+    min_kcal: "1,200 千卡",
+    max_kcal: "4,000 千卡",
+    default_portion_desc: "基于 BMI 的平衡分量。",
+    default_swaps_desc: "传统友好的健康替代品。"
+  },
+  bm: {
+    heritage_title: <>Warisan kita <br /> tertulis dalam <br /><span className="text-primary italic">resipi kita</span></>,
+    heritage_subtitle: <>Setiap <span className="italic font-medium">makan</span> adalah kisah rumah, kasih sayang, and tradisi.</>,
+    begin_story: "Mulakan Kisah Anda",
+    dietary_requirements: "Keperluan Pemakanan",
+    personalize_profile: "Mari peribadikan profil kesihatan anda.",
+    health_profile: "Profil Kesihatan",
+    height: "Tinggi (cm)",
+    weight: "Berat (kg)",
+    current_bmi: "BMI Semasa",
+    daily_calorie_goal: "Matlamat Kalori Harian",
+    next_meal_selection: "Seterusnya: Pilihan Hidangan",
+    profile_confirmed: "Profil Disahkan",
+    blueprint_ready: "Pelan kesihatan anda sudah sedia.",
+    calculated_bmi: "BMI Dikira",
+    lets_eat: "Jom Makan",
+    what_to_eat: "Apa yang anda ingin makan hari ini?",
+    search_placeholder: "Cari hidangan Malaysia...",
+    cant_decide: "Tak Boleh Pilih?",
+    picked_favorite: "Kami telah memilih kegemaran warisan untuk anda!",
+    customize_meal: "Peribadikan Hidangan Ini",
+    logged_meals: "Hidangan Direkod",
+    no_meals_logged: "Belum ada hidangan direkodkan.",
+    find_first_meal: "Cari hidangan pertama anda",
+    architecting_meal: "Membina Hidangan Anda...",
+    ai_note: "Nota Arkitek",
+    ingredients: "Bahan-bahan",
+    cooking_steps: "Langkah Memasak",
+    log_as_meal: "Rekod sebagai Makan Tengahari/Malam",
+    calories: "Kalori",
+    protein: "Protein",
+    fiber: "Serat",
+    fat: "Lemak",
+    carbs: "Karbohidrat",
+    portion_control: "Kawalan Bahagian",
+    smart_swaps: "Pertukaran Pintar",
+    ai_recalculation: "Butiran Pengiraan Semula AI",
+    home: "Utama",
+    plans: "Pelan",
+    profile: "Profil",
+    underweight: "Kurang Berat",
+    healthy: "Sihat",
+    overweight: "Berlebihan Berat",
+    obese: "Obesiti",
+    no_dishes_found: "Tiada hidangan ditemui sepadan",
+    new_selection: "Pilihan Baru",
+    ai_loading_note: "Pakar pemakanan AI kami sedang mengimbangi makro anda dan mengekalkan rasa warisan.",
+    swap_brown_rice: "Nasi Perang",
+    swap_no_santan: "Tanpa Santan",
+    swap_low_sodium: "Rendah Natrium",
+    swap_extra_protein: "Protein Tambahan",
+    swap_cauliflower_rice: "Nasi Kobis Bunga",
+    swap_air_fried: "Goreng Udara",
+    dish_nasi_lemak: "Nasi Lemak Ayam",
+    dish_sarawak_laksa: "Sarawak Laksa",
+    dish_satay_chicken: "Sate Ayam",
+    dish_mee_goreng: "Mee Goreng Mamak",
+    tag_high_protein: "Tinggi Protein",
+    tag_low_fat: "Tukar Rendah Lemak",
+    tag_lean_meat: "Daging Tanpa Lemak",
+    tag_less_oil: "Kurang Minyak",
+    more: "lagi",
+    kcal_per_day: "kcal/hari",
+    app_name: "Makan Sejahtera",
+    app_tagline: "Di Mana Kesihatan Bertemu Warisan",
+    min_kcal: "1,200 kcal",
+    max_kcal: "4,000 kcal",
+    default_portion_desc: "Pembahagian seimbang berdasarkan BMI.",
+    default_swaps_desc: "Alternatif sihat yang mesra warisan."
+  }
+};
 
 // --- Constants ---
 
 const DISHES = [
   {
     id: 'nasi-lemak',
-    name: 'Nasi Lemak Ayam',
+    nameKey: 'dish_nasi_lemak',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAG0B300c_DFnwgYLF-tAdfT4NUfaMG3pFPKut4MowO0eiet9-ekHQLjTb8PISRsVEalfbHwQoyg_AC4N2s73QGNkiEnkfybxxXcTyo_yK_ifSkxlmSMeCvY1hCMMiq-mezoHJYXEr5Tj1hxJ5uLEDigplXDbqXQu2wHtgtxSGvaeNCBecJiVDjCQl9GlQ3dVFuM5MDpRzy8-k7d7PwEUVvREY3B9j2o_uZJ9hygEU4yQM-XUMsH1yC20eGf07X9StNALGbUX7ldZA',
     baseKcal: 450,
-    tag: 'High Protein'
+    tagKey: 'tag_high_protein'
   },
   {
     id: 'sarawak-laksa',
-    name: 'Sarawak Laksa',
+    nameKey: 'dish_sarawak_laksa',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAnSudja7qFt-InlG3vGf52XvIcjnOMapnKFMsB4aqtWfbgk-UTp07ctIB48u_jRoh9LLqWbyTHmJsG6X-DyRlcVpSQeUXIPw-RrHDrkzu0ttkoj16DOLixkF2eFBkN8Unubirc7nejnN2mQ_Keq7mECIj031-cLWsdvl5B9XoaN39ws8P43ztR2KEXCekUfvMiFEARXvOr9n_4BGKgnwkUfLzsyGRxY7WXR1OTTwwO0R4sa5TTII2Jp4ZVBHFohP96W61dNawJXck',
     baseKcal: 380,
-    tag: 'Low Fat Swap'
+    tagKey: 'tag_low_fat'
   },
   {
     id: 'satay-chicken',
-    name: 'Satay Chicken',
+    nameKey: 'dish_satay_chicken',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC7YByTbdzLlLoOKTRE9E7cJLrPH82lu0JOHRcrgy7XIoS-UAvMgzGdmJd4rcG4lSlIEl5SV2Zs2yykZgteILlY5tSbUaB5RbOCLefoKfOI8f3P7VlmQD6nWVwN40I9DIUtgyt-lplzu_TSZR1O60NXN-DG_Ok6nLbzJ1fNh6Bvc3bMdUAey_xXUdnFcZ0iEVWnpkYsGAtiorrCXpBq-IP0_jx7KQxrCdudQXLEFFc8rO9z1wMtOE9_TbPfzXq-gO9TjxKY2Xze9p0',
     baseKcal: 290,
-    tag: 'Lean Meat'
+    tagKey: 'tag_lean_meat'
   },
   {
     id: 'mee-goreng',
-    name: 'Mee Goreng Mamak',
+    nameKey: 'dish_mee_goreng',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCDzk_V1_AaA-oTEt1eBhkdTlpSt3w-KreHJOtKatqzUgx9cURNvlc4wzvzqpRgZXjv0rHKtFFoaZbgb4RYPjewTYvb5NSDGbCQ-a7GetunTYePhxDBGCts-pmpJ9JfhY2p1LEqrEY4upLl25uKoWRqtc0JtUQT6p-hHHN9_R1E3IeeY36cbtRcScayKhpswCUQvL_aWNRdpgPxGvu6TBz61ET7SU5tRcYmwfu-vaSHOHfbktkJ4h9LNHCcxj9krmMz-l6VvZUSP-4',
     baseKcal: 410,
-    tag: 'Less Oil'
+    tagKey: 'tag_less_oil'
   }
 ];
 
 const SWAPS = [
-  { id: 'brown_rice', label: 'Brown Rice', icon: '🌾' },
-  { id: 'no_santan', label: 'No Santan', icon: '🥥' },
-  { id: 'low_sodium', label: 'Low Sodium', icon: '🧂' },
-  { id: 'extra_protein', label: 'Extra Protein', icon: '🍗' },
-  { id: 'cauliflower_rice', label: 'Cauliflower Rice', icon: '🥦' },
-  { id: 'air_fried', label: 'Air Fried', icon: '💨' }
+  { id: 'brown_rice', labelKey: 'swap_brown_rice', icon: '🌾' },
+  { id: 'no_santan', labelKey: 'swap_no_santan', icon: '🥥' },
+  { id: 'low_sodium', labelKey: 'swap_low_sodium', icon: '🧂' },
+  { id: 'extra_protein', labelKey: 'swap_extra_protein', icon: '🍗' },
+  { id: 'cauliflower_rice', labelKey: 'swap_cauliflower_rice', icon: '🥦' },
+  { id: 'air_fried', labelKey: 'swap_air_fried', icon: '💨' }
 ];
 
 // --- Components ---
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('landing');
+  const [lang, setLang] = useState<Language>(() => {
+    const saved = localStorage.getItem('lang');
+    return (saved as Language) || 'en';
+  });
+
+  const t = TRANSLATIONS[lang];
+
+  useEffect(() => {
+    localStorage.setItem('lang', lang);
+  }, [lang]);
   const [onboardingComplete, setOnboardingComplete] = useState(() => {
     return localStorage.getItem('onboardingComplete') === 'true';
   });
@@ -158,10 +382,10 @@ export default function App() {
   }, [metrics.height, metrics.weight]);
 
   const getBMICategory = (bmi: number) => {
-    if (bmi < 18.5) return { label: 'Underweight', color: 'text-blue-500' };
-    if (bmi < 25) return { label: 'Healthy', color: 'text-primary' };
-    if (bmi < 30) return { label: 'Overweight', color: 'text-orange-500' };
-    return { label: 'Obese', color: 'text-red-500' };
+    if (bmi < 18.5) return { label: t.underweight, color: 'text-blue-500' };
+    if (bmi < 25) return { label: t.healthy, color: 'text-primary' };
+    if (bmi < 30) return { label: t.overweight, color: 'text-orange-500' };
+    return { label: t.obese, color: 'text-red-500' };
   };
 
   const handleCustomize = async (dish: typeof DISHES[0]) => {
@@ -174,6 +398,7 @@ export default function App() {
       
       const systemInstruction = `You are the Nutri-Malay Architect. 
 Your Goal: Take a standard Malaysian recipe and a set of user health constraints (BMI, target calories) to produce a modified, healthy version of the dish.
+The user's preferred language is ${lang === 'cn' ? 'Simplified Chinese' : lang === 'bm' ? 'Bahasa Melayu' : 'English'}. Please provide the response in this language.
 
 Input: {dish_name, bmi, calorie_limit}. 
 
@@ -201,9 +426,9 @@ Expected JSON structure:
   }
 }`;
 
-      const prompt = `Dish: ${dish.name}
+      const prompt = `Dish: ${t[dish.nameKey]}
 User Metrics: ${JSON.stringify(metrics)}
-Selected Swaps: ${activeSwaps.join(", ")}`;
+Selected Swaps: ${activeSwaps.map(id => SWAPS.find(s => s.id === id)?.labelKey ? t[SWAPS.find(s => s.id === id)!.labelKey] : id).join(", ")}`;
 
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
@@ -255,7 +480,12 @@ Selected Swaps: ${activeSwaps.join(", ")}`;
     <div className="min-h-screen bg-[#f6f8f6] font-display">
       <AnimatePresence mode="wait">
         {screen === 'landing' && (
-          <LandingScreen onStart={() => setScreen(onboardingComplete ? 'selector' : 'profile')} />
+          <LandingScreen 
+            onStart={() => setScreen(onboardingComplete ? 'selector' : 'profile')} 
+            lang={lang}
+            setLang={setLang}
+            t={t}
+          />
         )}
         {screen === 'profile' && (
           <ProfileScreen 
@@ -263,12 +493,14 @@ Selected Swaps: ${activeSwaps.join(", ")}`;
             setMetrics={setMetrics} 
             onNext={() => setScreen('profile_summary')} 
             getBMICategory={getBMICategory}
+            t={t}
           />
         )}
         {screen === 'profile_summary' && (
           <ProfileSummaryScreen 
             metrics={metrics} 
             getBMICategory={getBMICategory}
+            t={t}
             onConfirm={() => {
               setOnboardingComplete(true);
               setScreen('selector');
@@ -283,6 +515,7 @@ Selected Swaps: ${activeSwaps.join(", ")}`;
             toggleSwap={toggleSwap}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
+            t={t}
           />
         )}
         {screen === 'result' && (
@@ -291,12 +524,14 @@ Selected Swaps: ${activeSwaps.join(", ")}`;
             result={result}
             onBack={() => setScreen('selector')}
             onLog={logMeal}
+            t={t}
           />
         )}
         {screen === 'history' && (
           <HistoryScreen 
             history={mealHistory}
             onBack={() => setScreen('selector')}
+            t={t}
           />
         )}
       </AnimatePresence>
@@ -307,25 +542,25 @@ Selected Swaps: ${activeSwaps.join(", ")}`;
           <div className="max-w-md mx-auto flex justify-between items-center">
             <NavButton 
               icon={<Home size={24} />} 
-              label="Home" 
+              label={t.home} 
               active={screen === 'landing'} 
               onClick={() => setScreen('landing')} 
             />
             <NavButton 
               icon={<Activity size={24} />} 
-              label="Plans" 
+              label={t.plans} 
               active={screen === 'selector' || screen === 'result'} 
               onClick={() => setScreen('selector')} 
             />
             <NavButton 
               icon={<History size={24} />} 
-              label="Logged Meals" 
+              label={t.logged_meals} 
               active={screen === 'history'} 
               onClick={() => setScreen('history')} 
             />
             <NavButton 
               icon={<User size={24} />} 
-              label="Profile" 
+              label={t.profile} 
               active={screen === 'profile' || screen === 'profile_summary'} 
               onClick={() => setScreen('profile')} 
             />
@@ -376,7 +611,15 @@ function ProgressRing({ consumed, total }: { consumed: number; total: number }) 
   );
 }
 
-function LandingScreen({ onStart }: { onStart: () => void }) {
+function LandingScreen({ onStart, lang, setLang, t }: { onStart: () => void; lang: Language; setLang: (l: Language) => void; t: any }) {
+  const [showLangMenu, setShowLangMenu] = useState(false);
+
+  const languages = [
+    { id: 'en', label: 'EN' },
+    { id: 'cn', label: 'CN' },
+    { id: 'bm', label: 'BM' }
+  ];
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -396,10 +639,39 @@ function LandingScreen({ onStart }: { onStart: () => void }) {
 
       {/* Language Selector */}
       <div className="relative z-10 flex justify-end p-6">
-        <button className="flex items-center gap-1 text-white/80 text-sm font-medium">
-          <Globe size={16} />
-          EN
-        </button>
+        <div className="relative">
+          <button 
+            onClick={() => setShowLangMenu(!showLangMenu)}
+            className="flex items-center gap-1 text-white/80 text-sm font-medium bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10"
+          >
+            <Globe size={16} />
+            {lang.toUpperCase()}
+          </button>
+          
+          <AnimatePresence>
+            {showLangMenu && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="absolute right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 w-24"
+              >
+                {languages.map(l => (
+                  <button
+                    key={l.id}
+                    onClick={() => {
+                      setLang(l.id as Language);
+                      setShowLangMenu(false);
+                    }}
+                    className={`w-full px-4 py-3 text-sm font-bold text-left hover:bg-slate-50 transition-colors ${lang === l.id ? 'text-primary' : 'text-slate-600'}`}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       <div className="relative z-10 flex flex-col items-center text-center px-6">
@@ -409,11 +681,10 @@ function LandingScreen({ onStart }: { onStart: () => void }) {
           transition={{ delay: 0.2 }}
         >
           <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight">
-            Our heritage is <br /> written in <br />
-            <span className="text-primary italic">our recipes</span>
+            {t.heritage_title}
           </h1>
           <p className="text-lg text-white mt-6 font-light max-w-md mx-auto leading-relaxed">
-            Every <span className="italic font-medium">makan</span> is a story of home, love, and tradition.
+            {t.heritage_subtitle}
           </p>
         </motion.div>
 
@@ -423,7 +694,7 @@ function LandingScreen({ onStart }: { onStart: () => void }) {
           onClick={onStart}
           className="bg-primary text-[#102216] font-bold py-4 px-10 rounded-full shadow-2xl shadow-primary/30 flex items-center gap-3 text-lg mt-10"
         >
-          Begin Your Story
+          {t.begin_story}
           <ArrowRight size={20} />
         </motion.button>
       </div>
@@ -435,8 +706,8 @@ function LandingScreen({ onStart }: { onStart: () => void }) {
               <Utensils className="text-[#102216]" size={28} />
             </div>
             <div className="text-left">
-              <p className="text-white font-bold text-2xl leading-none tracking-tight">Makan Sejahtera</p>
-              <p className="text-primary text-[10px] font-bold uppercase tracking-[0.2em] mt-1">Where Health Meets Heritage</p>
+              <p className="text-white font-bold text-2xl leading-none tracking-tight">{t.app_name}</p>
+              <p className="text-primary text-[10px] font-bold uppercase tracking-[0.2em] mt-1">{t.app_tagline}</p>
             </div>
           </div>
           
@@ -453,7 +724,7 @@ function LandingScreen({ onStart }: { onStart: () => void }) {
   );
 }
 
-function ProfileSummaryScreen({ metrics, getBMICategory, onConfirm }: any) {
+function ProfileSummaryScreen({ metrics, getBMICategory, onConfirm, t }: any) {
   return (
     <motion.div 
       initial={{ scale: 0.9, opacity: 0 }}
@@ -464,13 +735,13 @@ function ProfileSummaryScreen({ metrics, getBMICategory, onConfirm }: any) {
       <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-8">
         <CheckCircle2 size={40} />
       </div>
-      <h2 className="text-3xl font-bold text-slate-900 mb-2">Profile Confirmed</h2>
-      <p className="text-slate-500 mb-10">Your health blueprint is ready.</p>
+      <h2 className="text-3xl font-bold text-slate-900 mb-2">{t.profile_confirmed}</h2>
+      <p className="text-slate-500 mb-10">{t.blueprint_ready}</p>
 
       <div className="w-full space-y-4 mb-12">
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex justify-between items-center">
           <div className="text-left">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Calculated BMI</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t.calculated_bmi}</p>
             <p className={`text-2xl font-black ${getBMICategory(metrics.bmi).color}`}>{metrics.bmi}</p>
           </div>
           <span className={`text-xs font-bold px-3 py-1 rounded-full bg-slate-50 ${getBMICategory(metrics.bmi).color}`}>
@@ -480,7 +751,7 @@ function ProfileSummaryScreen({ metrics, getBMICategory, onConfirm }: any) {
 
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex justify-between items-center">
           <div className="text-left">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Daily Calorie Goal</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t.daily_calorie_goal}</p>
             <p className="text-2xl font-black text-primary">{metrics.dailyGoal} kcal</p>
           </div>
           <Flame size={24} className="text-primary" />
@@ -491,14 +762,14 @@ function ProfileSummaryScreen({ metrics, getBMICategory, onConfirm }: any) {
         onClick={onConfirm}
         className="w-full bg-primary text-[#102216] font-bold py-5 rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-2 text-lg"
       >
-        Let's Eat
+        {t.lets_eat}
         <ArrowRight size={20} />
       </button>
     </motion.div>
   );
 }
 
-function ProfileScreen({ metrics, setMetrics, onNext, getBMICategory }: any) {
+function ProfileScreen({ metrics, setMetrics, onNext, getBMICategory, t }: any) {
   return (
     <motion.div 
       initial={{ x: 300, opacity: 0 }}
@@ -507,19 +778,19 @@ function ProfileScreen({ metrics, setMetrics, onNext, getBMICategory }: any) {
       className="max-w-md mx-auto px-6 pt-12 pb-32"
     >
       <header className="mb-10">
-        <h2 className="text-3xl font-bold text-slate-900">Dietary Requirements</h2>
-        <p className="text-slate-500 mt-2">Let's personalize your health profile.</p>
+        <h2 className="text-3xl font-bold text-slate-900">{t.dietary_requirements}</h2>
+        <p className="text-slate-500 mt-2">{t.personalize_profile}</p>
       </header>
 
       <div className="space-y-8">
         <section>
           <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
             <Activity className="text-primary" size={20} />
-            Health Profile
+            {t.health_profile}
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-600">Height (cm)</label>
+              <label className="text-sm font-medium text-slate-600">{t.height}</label>
               <input 
                 type="number"
                 value={metrics.height}
@@ -528,7 +799,7 @@ function ProfileScreen({ metrics, setMetrics, onNext, getBMICategory }: any) {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-600">Weight (kg)</label>
+              <label className="text-sm font-medium text-slate-600">{t.weight}</label>
               <input 
                 type="number"
                 value={metrics.weight}
@@ -538,7 +809,7 @@ function ProfileScreen({ metrics, setMetrics, onNext, getBMICategory }: any) {
             </div>
           </div>
           <div className="mt-6 p-4 bg-primary/5 rounded-2xl border border-primary/10">
-            <p className="text-sm text-slate-500">Current BMI</p>
+            <p className="text-sm text-slate-500">{t.current_bmi}</p>
             <div className="flex items-center justify-between mt-1">
               <p className={`text-2xl font-bold ${getBMICategory(metrics.bmi).color}`}>
                 {metrics.bmi}
@@ -551,7 +822,7 @@ function ProfileScreen({ metrics, setMetrics, onNext, getBMICategory }: any) {
         </section>
 
         <section className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-          <h3 className="text-lg font-bold mb-4">Daily Calorie Goal</h3>
+          <h3 className="text-lg font-bold mb-4">{t.daily_calorie_goal}</h3>
           <div className="space-y-4">
             <input 
               type="range" 
@@ -563,12 +834,12 @@ function ProfileScreen({ metrics, setMetrics, onNext, getBMICategory }: any) {
               className="w-full h-2 bg-slate-100 rounded-full appearance-none accent-primary cursor-pointer"
             />
             <div className="flex justify-between items-end">
-              <span className="text-xs text-slate-400">1,200 kcal</span>
+              <span className="text-xs text-slate-400">{t.min_kcal}</span>
               <div className="text-center">
                 <span className="text-3xl font-black text-primary">{metrics.dailyGoal}</span>
-                <span className="text-xs block text-slate-400">kcal/day</span>
+                <span className="text-xs block text-slate-400">{t.kcal_per_day}</span>
               </div>
-              <span className="text-xs text-slate-400">4,000 kcal</span>
+              <span className="text-xs text-slate-400">{t.max_kcal}</span>
             </div>
           </div>
         </section>
@@ -577,7 +848,7 @@ function ProfileScreen({ metrics, setMetrics, onNext, getBMICategory }: any) {
           onClick={onNext}
           className="w-full bg-primary text-[#102216] font-bold py-5 rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-2 text-lg"
         >
-          Next: Meal Selection
+          {t.next_meal_selection}
           <ArrowRight size={20} />
         </button>
       </div>
@@ -585,15 +856,15 @@ function ProfileScreen({ metrics, setMetrics, onNext, getBMICategory }: any) {
   );
 }
 
-function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery, setSearchQuery }: any) {
+function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery, setSearchQuery, t }: any) {
   const [showCantDecide, setShowCantDecide] = useState(false);
   const [randomDish, setRandomDish] = useState<any>(null);
 
   const filteredDishes = useMemo(() => {
     return DISHES.filter(dish => 
-      dish.name.toLowerCase().includes(searchQuery.toLowerCase())
+      t[dish.nameKey].toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [searchQuery]);
+  }, [searchQuery, t]);
 
   const handleCantDecide = () => {
     const random = DISHES[Math.floor(Math.random() * DISHES.length)];
@@ -609,11 +880,11 @@ function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery
       className="max-w-md mx-auto px-6 pt-12 pb-32"
     >
       <header className="mb-8 flex justify-between items-start">
-        <h2 className="text-3xl font-bold text-slate-900 pr-4">What would you like to eat today?</h2>
+        <h2 className="text-3xl font-bold text-slate-900 pr-4">{t.what_to_eat}</h2>
         <button 
           onClick={handleCantDecide}
           className="shrink-0 w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all"
-          title="Can't Decide?"
+          title={t.cant_decide}
         >
           <Dices size={24} />
         </button>
@@ -625,7 +896,7 @@ function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery
         </div>
         <input 
           type="text"
-          placeholder="Search for Malaysian dishes..."
+          placeholder={t.search_placeholder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full h-14 bg-slate-100 border-none rounded-2xl pl-12 pr-12 focus:ring-2 focus:ring-primary outline-none transition-all font-medium"
@@ -659,18 +930,18 @@ function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
                   <Dices size={32} />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900">Can't Decide?</h3>
-                <p className="text-slate-500 mt-2">We've picked a heritage favorite for you!</p>
+                <h3 className="text-2xl font-bold text-slate-900">{t.cant_decide}</h3>
+                <p className="text-slate-500 mt-2">{t.picked_favorite}</p>
               </div>
 
               <div className="bg-slate-50 rounded-3xl p-4 mb-8 border border-slate-100">
                 <img 
                   src={randomDish.image} 
                   className="w-full h-40 object-cover rounded-2xl mb-4" 
-                  alt={randomDish.name}
+                  alt={t[randomDish.nameKey]}
                 />
-                <h4 className="font-bold text-xl text-slate-900 text-center">{randomDish.name}</h4>
-                <p className="text-center text-xs text-slate-400 mt-1 font-bold uppercase tracking-widest">{randomDish.tag}</p>
+                <h4 className="font-bold text-xl text-slate-900 text-center">{t[randomDish.nameKey]}</h4>
+                <p className="text-center text-xs text-slate-400 mt-1 font-bold uppercase tracking-widest">{t[randomDish.tagKey]}</p>
               </div>
 
               <button 
@@ -680,7 +951,7 @@ function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery
                 }}
                 className="w-full bg-primary text-[#102216] font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
               >
-                Customize This Meal
+                {t.customize_meal}
                 <ArrowRight size={20} />
               </button>
             </motion.div>
@@ -700,7 +971,7 @@ function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery
             }`}
           >
             <span>{swap.icon}</span>
-            {swap.label}
+            {t[swap.labelKey]}
           </button>
         ))}
       </div>
@@ -717,7 +988,7 @@ function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery
               <img 
                 src={dish.image} 
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                alt={dish.name}
+                alt={t[dish.nameKey]}
                 referrerPolicy="no-referrer"
               />
               <div className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-md rounded-full text-slate-400">
@@ -726,11 +997,11 @@ function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery
             </div>
             <div className="p-5 flex justify-between items-center">
               <div>
-                <h4 className="font-bold text-xl text-slate-900">{dish.name}</h4>
+                <h4 className="font-bold text-xl text-slate-900">{t[dish.nameKey]}</h4>
                 <div className="flex items-center gap-2 mt-1">
                   <Zap size={14} className="text-primary fill-primary" />
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    {dish.baseKcal} kcal • {dish.tag}
+                    {dish.baseKcal} kcal • {t[dish.tagKey]}
                   </p>
                 </div>
               </div>
@@ -742,7 +1013,7 @@ function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery
         ))}
         {filteredDishes.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-slate-400 font-medium">No dishes found matching "{searchQuery}"</p>
+            <p className="text-slate-400 font-medium">{t.no_dishes_found} "{searchQuery}"</p>
           </div>
         )}
       </div>
@@ -750,7 +1021,7 @@ function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery
   );
 }
 
-function HistoryScreen({ history, onBack }: any) {
+function HistoryScreen({ history, onBack, t }: any) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -759,7 +1030,7 @@ function HistoryScreen({ history, onBack }: any) {
       className="max-w-md mx-auto px-6 pt-12 pb-32"
     >
       <header className="mb-8 flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-slate-900">Logged Meals</h2>
+        <h2 className="text-3xl font-bold text-slate-900">{t.logged_meals}</h2>
         <button onClick={onBack} className="p-2 bg-white rounded-xl shadow-sm border border-slate-100 text-slate-400">
           <Utensils size={20} />
         </button>
@@ -768,12 +1039,12 @@ function HistoryScreen({ history, onBack }: any) {
       {history.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-slate-200">
           <History size={48} className="mx-auto text-slate-200 mb-4" />
-          <p className="text-slate-400 font-medium">No meals logged yet.</p>
+          <p className="text-slate-400 font-medium">{t.no_meals_logged}</p>
           <button 
             onClick={onBack}
             className="mt-4 text-primary font-bold text-sm"
           >
-            Find your first meal
+            {t.find_first_meal}
           </button>
         </div>
       ) : (
@@ -796,7 +1067,7 @@ function HistoryScreen({ history, onBack }: any) {
                   </span>
                 ))}
                 {meal.ingredients.length > 3 && (
-                  <span className="text-[10px] text-slate-400 py-1">+{meal.ingredients.length - 3} more</span>
+                  <span className="text-[10px] text-slate-400 py-1">+{meal.ingredients.length - 3} {t.more}</span>
                 )}
               </div>
             </div>
@@ -807,7 +1078,7 @@ function HistoryScreen({ history, onBack }: any) {
   );
 }
 
-function ResultScreen({ loading, result, onBack, onLog }: any) {
+function ResultScreen({ loading, result, onBack, onLog, t }: any) {
   if (loading) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-[#102216] px-6 text-center">
@@ -816,9 +1087,9 @@ function ResultScreen({ loading, result, onBack, onLog }: any) {
           transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
           className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full mb-8"
         />
-        <h2 className="text-2xl font-bold text-white">Architecting Your Meal...</h2>
+        <h2 className="text-2xl font-bold text-white">{t.architecting_meal}</h2>
         <p className="text-slate-400 mt-4 max-w-xs">
-          Our AI nutritionist is balancing your macros and preserving heritage flavors.
+          {t.ai_loading_note}
         </p>
       </div>
     );
@@ -833,7 +1104,7 @@ function ResultScreen({ loading, result, onBack, onLog }: any) {
       className="max-w-md mx-auto px-6 pt-12 pb-32"
     >
       <button onClick={onBack} className="mb-6 text-slate-400 flex items-center gap-1">
-        <ChevronLeft size={20} /> New Selection
+        <ChevronLeft size={20} /> {t.new_selection}
       </button>
 
       <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
@@ -846,22 +1117,22 @@ function ResultScreen({ loading, result, onBack, onLog }: any) {
 
         <div className="p-5 bg-primary/5 rounded-3xl border border-primary/10 mb-8">
           <p className="text-sm font-bold text-primary uppercase tracking-widest mb-2 flex items-center gap-2">
-            <Info size={14} /> Architect's Note
+            <Info size={14} /> {t.ai_note}
           </p>
           <p className="text-slate-600 italic leading-relaxed">"{result.architect_note}"</p>
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-10">
-          <StatBox label="Calories" value={result.nutrition?.calories || 0} unit="kcal" />
-          <StatBox label="Protein" value={result.nutrition?.protein || 0} unit="g" />
-          <StatBox label="Fiber" value={result.nutrition?.fiber || 0} unit="g" />
+          <StatBox label={t.calories} value={result.nutrition?.calories || 0} unit="kcal" />
+          <StatBox label={t.protein} value={result.nutrition?.protein || 0} unit="g" />
+          <StatBox label={t.fiber} value={result.nutrition?.fiber || 0} unit="g" />
         </div>
 
         <div className="space-y-8">
           <section>
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Utensils size={20} className="text-primary" />
-              Ingredients
+              {t.ingredients}
             </h3>
             <ul className="space-y-3">
               {result.ingredients?.map((ing: string, i: number) => (
@@ -876,7 +1147,7 @@ function ResultScreen({ loading, result, onBack, onLog }: any) {
           <section>
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               <Activity size={20} className="text-primary" />
-              Cooking Steps
+              {t.cooking_steps}
             </h3>
             <div className="space-y-6">
               {result.steps?.map((step: string, i: number) => (
@@ -891,10 +1162,10 @@ function ResultScreen({ loading, result, onBack, onLog }: any) {
           </section>
 
           <section className="pt-6 border-t border-slate-100">
-            <h3 className="text-lg font-bold mb-4">AI Recalculation Details</h3>
+            <h3 className="text-lg font-bold mb-4">{t.ai_recalculation}</h3>
             <div className="space-y-4">
-              <DetailCard icon={<Scale size={20} />} title="Portion Control" desc={result.ai_details?.portion_control || "Balanced portioning based on BMI."} />
-              <DetailCard icon={<Zap size={20} />} title="Smart Swaps" desc={result.ai_details?.smart_swaps || "Heritage-friendly healthy alternatives."} />
+              <DetailCard icon={<Scale size={20} />} title={t.portion_control} desc={result.ai_details?.portion_control || t.default_portion_desc} />
+              <DetailCard icon={<Zap size={20} />} title={t.smart_swaps} desc={result.ai_details?.smart_swaps || t.default_swaps_desc} />
             </div>
           </section>
 
@@ -902,7 +1173,7 @@ function ResultScreen({ loading, result, onBack, onLog }: any) {
             onClick={() => onLog(result.nutrition?.calories || 0)}
             className="w-full bg-[#102216] text-white font-bold py-5 rounded-2xl shadow-xl flex items-center justify-center gap-2 text-lg mt-8"
           >
-            Log as Lunch/Dinner
+            {t.log_as_meal}
             <CheckCircle2 size={20} className="text-primary" />
           </button>
         </div>
