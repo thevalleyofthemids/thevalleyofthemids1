@@ -20,8 +20,15 @@ import {
   Activity,
   CheckCircle2,
   Zap,
-  Leaf
+  Leaf,
+  Facebook,
+  Instagram,
+  Globe,
+  Dices,
+  X
 } from 'lucide-react';
+
+import { GoogleGenAI } from "@google/genai";
 
 // --- Types ---
 
@@ -50,7 +57,7 @@ interface RecipeResult {
   };
 }
 
-type Screen = 'landing' | 'profile' | 'profile_summary' | 'selector' | 'result';
+type Screen = 'landing' | 'profile' | 'profile_summary' | 'selector' | 'result' | 'history';
 
 // --- Constants ---
 
@@ -105,6 +112,15 @@ export default function App() {
     return Number(localStorage.getItem('caloriesConsumed')) || 0;
   });
   const [searchQuery, setSearchQuery] = useState('');
+  const [mealHistory, setMealHistory] = useState<any[]>(() => {
+    const saved = localStorage.getItem('mealHistory');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('mealHistory', JSON.stringify(mealHistory));
+  }, [mealHistory]);
+
   const [metrics, setMetrics] = useState<UserMetrics>(() => {
     const saved = localStorage.getItem('userMetrics');
     return saved ? JSON.parse(saved) : {
@@ -154,19 +170,56 @@ export default function App() {
     setScreen('result');
 
     try {
-      const response = await fetch('/api/customize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dish_name: dish.name,
-          user_metrics: metrics,
-          selected_swaps: activeSwaps
-        })
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+      
+      const systemInstruction = `You are the Nutri-Malay Architect. 
+Your Goal: Take a standard Malaysian recipe and a set of user health constraints (BMI, target calories) to produce a modified, healthy version of the dish.
+
+Input: {dish_name, bmi, calorie_limit}. 
+
+Output Rules:
+1. Always return valid JSON.
+2. Scaling Logic: If the user's BMI is high (over 25) or their calorie goal is low, prioritize "karbo" (carbohydrate) reduction and increasing fiber.
+3. Authenticity Guardrail: Ensure the modified recipe still tastes like the original dish. Always suggest local Malaysian health swaps like cauliflower rice, diluted santan, or monkfruit sweetener.
+
+Expected JSON structure:
+{
+  "modified_dish_name": "string",
+  "architect_note": "string",
+  "ingredients": ["string"],
+  "steps": ["string"],
+  "nutrition": {
+    "calories": number,
+    "protein": number,
+    "fat": number,
+    "carbs": number,
+    "fiber": number
+  },
+  "ai_details": {
+    "portion_control": "string",
+    "smart_swaps": "string"
+  }
+}`;
+
+      const prompt = `Dish: ${dish.name}
+User Metrics: ${JSON.stringify(metrics)}
+Selected Swaps: ${activeSwaps.join(", ")}`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        config: {
+          systemInstruction: systemInstruction,
+          responseMimeType: "application/json",
+        },
       });
-      const data = await response.json();
-      setResult(data);
+
+      const responseText = response.text;
+      if (responseText) {
+        setResult(JSON.parse(responseText));
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Gemini API Error:", error);
     } finally {
       setLoading(false);
     }
@@ -174,7 +227,20 @@ export default function App() {
 
   const logMeal = (calories: number) => {
     setCaloriesConsumed(prev => prev + calories);
-    setScreen('selector');
+    
+    // Add to history
+    if (result) {
+      setMealHistory(prev => [
+        { 
+          ...result, 
+          id: Date.now(),
+          date: new Date().toLocaleDateString('en-MY', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) 
+        },
+        ...prev
+      ]);
+    }
+
+    setScreen('history');
     setResult(null);
     setSelectedDish(null);
   };
@@ -227,6 +293,12 @@ export default function App() {
             onLog={logMeal}
           />
         )}
+        {screen === 'history' && (
+          <HistoryScreen 
+            history={mealHistory}
+            onBack={() => setScreen('selector')}
+          />
+        )}
       </AnimatePresence>
 
       {/* Bottom Nav - Only show on app screens */}
@@ -234,14 +306,29 @@ export default function App() {
         <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-100 px-6 py-3 z-50">
           <div className="max-w-md mx-auto flex justify-between items-center">
             <NavButton 
-              icon={<ProgressRing consumed={caloriesConsumed} total={metrics.dailyGoal} />} 
+              icon={<Home size={24} />} 
               label="Home" 
-              active={screen === 'selector'} 
+              active={screen === 'landing'} 
+              onClick={() => setScreen('landing')} 
+            />
+            <NavButton 
+              icon={<Activity size={24} />} 
+              label="Plans" 
+              active={screen === 'selector' || screen === 'result'} 
               onClick={() => setScreen('selector')} 
             />
-            <NavButton icon={<Activity size={24} />} label="Plans" active={screen === 'profile'} onClick={() => setScreen('profile')} />
-            <NavButton icon={<Utensils size={24} />} label="Meals" active={screen === 'result'} />
-            <NavButton icon={<User size={24} />} label="Profile" active={screen === 'profile'} onClick={() => setScreen('profile')} />
+            <NavButton 
+              icon={<History size={24} />} 
+              label="Logged Meals" 
+              active={screen === 'history'} 
+              onClick={() => setScreen('history')} 
+            />
+            <NavButton 
+              icon={<User size={24} />} 
+              label="Profile" 
+              active={screen === 'profile' || screen === 'profile_summary'} 
+              onClick={() => setScreen('profile')} 
+            />
           </div>
         </nav>
       )}
@@ -304,10 +391,18 @@ function LandingScreen({ onStart }: { onStart: () => void }) {
           alt="Malaysian Food"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#102216]/95 via-[#102216]/60 to-transparent" />
+        <div className="absolute inset-0 bg-black/40" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center text-center px-6 pt-20">
+      {/* Language Selector */}
+      <div className="relative z-10 flex justify-end p-6">
+        <button className="flex items-center gap-1 text-white/80 text-sm font-medium">
+          <Globe size={16} />
+          EN
+        </button>
+      </div>
+
+      <div className="relative z-10 flex flex-col items-center text-center px-6">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -317,32 +412,40 @@ function LandingScreen({ onStart }: { onStart: () => void }) {
             Our heritage is <br /> written in <br />
             <span className="text-primary italic">our recipes</span>
           </h1>
-          <p className="text-xl text-slate-200 mt-6 font-light max-w-md mx-auto">
-            Every <span className="italic font-medium">meal</span> is a story of home, love, and tradition.
+          <p className="text-lg text-white mt-6 font-light max-w-md mx-auto leading-relaxed">
+            Every <span className="italic font-medium">makan</span> is a story of home, love, and tradition.
           </p>
         </motion.div>
-      </div>
 
-      <div className="relative z-10 flex flex-col items-center px-6 pb-20">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onStart}
-          className="bg-primary text-[#102216] font-bold py-5 px-12 rounded-full shadow-2xl shadow-primary/30 flex items-center gap-3 text-lg"
+          className="bg-primary text-[#102216] font-bold py-4 px-10 rounded-full shadow-2xl shadow-primary/30 flex items-center gap-3 text-lg mt-10"
         >
           Begin Your Story
           <ArrowRight size={20} />
         </motion.button>
+      </div>
 
-        <div className="mt-12 flex flex-col items-center gap-2">
+      <div className="relative z-10 flex flex-col items-center px-6 pb-12">
+        <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <Utensils className="text-[#102216]" size={24} />
+            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+              <Utensils className="text-[#102216]" size={28} />
             </div>
             <div className="text-left">
-              <p className="text-white font-bold text-xl leading-none">Makan Sejahtera</p>
-              <p className="text-primary text-xs font-medium">Where Health Meets Heritage</p>
+              <p className="text-white font-bold text-2xl leading-none tracking-tight">Makan Sejahtera</p>
+              <p className="text-primary text-[10px] font-bold uppercase tracking-[0.2em] mt-1">Where Health Meets Heritage</p>
             </div>
+          </div>
+          
+          <div className="w-12 h-0.5 bg-primary/30 rounded-full mt-2" />
+
+          <div className="flex items-center gap-6 mt-4 text-white/60">
+            <Facebook size={20} className="hover:text-primary cursor-pointer transition-colors" />
+            <Instagram size={20} className="hover:text-primary cursor-pointer transition-colors" />
+            <Globe size={20} className="hover:text-primary cursor-pointer transition-colors" />
           </div>
         </div>
       </div>
@@ -483,11 +586,20 @@ function ProfileScreen({ metrics, setMetrics, onNext, getBMICategory }: any) {
 }
 
 function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery, setSearchQuery }: any) {
+  const [showCantDecide, setShowCantDecide] = useState(false);
+  const [randomDish, setRandomDish] = useState<any>(null);
+
   const filteredDishes = useMemo(() => {
     return DISHES.filter(dish => 
       dish.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [searchQuery]);
+
+  const handleCantDecide = () => {
+    const random = DISHES[Math.floor(Math.random() * DISHES.length)];
+    setRandomDish(random);
+    setShowCantDecide(true);
+  };
 
   return (
     <motion.div 
@@ -496,8 +608,15 @@ function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery
       exit={{ x: -300, opacity: 0 }}
       className="max-w-md mx-auto px-6 pt-12 pb-32"
     >
-      <header className="mb-8">
-        <h2 className="text-3xl font-bold text-slate-900">What would you like to eat today?</h2>
+      <header className="mb-8 flex justify-between items-start">
+        <h2 className="text-3xl font-bold text-slate-900 pr-4">What would you like to eat today?</h2>
+        <button 
+          onClick={handleCantDecide}
+          className="shrink-0 w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all"
+          title="Can't Decide?"
+        >
+          <Dices size={24} />
+        </button>
       </header>
 
       <div className="relative mb-8">
@@ -511,12 +630,63 @@ function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full h-14 bg-slate-100 border-none rounded-2xl pl-12 pr-12 focus:ring-2 focus:ring-primary outline-none transition-all font-medium"
         />
-        <div className="absolute inset-y-0 right-4 flex items-center text-slate-400">
-          <button className="p-1 hover:text-primary transition-colors">
-            <Activity size={20} />
-          </button>
-        </div>
       </div>
+
+      <AnimatePresence>
+        {showCantDecide && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowCantDecide(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-sm bg-white rounded-[2.5rem] p-8 shadow-2xl overflow-hidden"
+            >
+              <button 
+                onClick={() => setShowCantDecide(false)}
+                className="absolute top-6 right-6 text-slate-400 hover:text-slate-600"
+              >
+                <X size={24} />
+              </button>
+              
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto mb-4">
+                  <Dices size={32} />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900">Can't Decide?</h3>
+                <p className="text-slate-500 mt-2">We've picked a heritage favorite for you!</p>
+              </div>
+
+              <div className="bg-slate-50 rounded-3xl p-4 mb-8 border border-slate-100">
+                <img 
+                  src={randomDish.image} 
+                  className="w-full h-40 object-cover rounded-2xl mb-4" 
+                  alt={randomDish.name}
+                />
+                <h4 className="font-bold text-xl text-slate-900 text-center">{randomDish.name}</h4>
+                <p className="text-center text-xs text-slate-400 mt-1 font-bold uppercase tracking-widest">{randomDish.tag}</p>
+              </div>
+
+              <button 
+                onClick={() => {
+                  setShowCantDecide(false);
+                  onSelect(randomDish);
+                }}
+                className="w-full bg-primary text-[#102216] font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+              >
+                Customize This Meal
+                <ArrowRight size={20} />
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <div className="mb-8 overflow-x-auto no-scrollbar flex gap-3 pb-2">
         {SWAPS.map(swap => (
@@ -580,6 +750,63 @@ function SelectorScreen({ onBack, onSelect, activeSwaps, toggleSwap, searchQuery
   );
 }
 
+function HistoryScreen({ history, onBack }: any) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="max-w-md mx-auto px-6 pt-12 pb-32"
+    >
+      <header className="mb-8 flex justify-between items-center">
+        <h2 className="text-3xl font-bold text-slate-900">Logged Meals</h2>
+        <button onClick={onBack} className="p-2 bg-white rounded-xl shadow-sm border border-slate-100 text-slate-400">
+          <Utensils size={20} />
+        </button>
+      </header>
+
+      {history.length === 0 ? (
+        <div className="text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-slate-200">
+          <History size={48} className="mx-auto text-slate-200 mb-4" />
+          <p className="text-slate-400 font-medium">No meals logged yet.</p>
+          <button 
+            onClick={onBack}
+            className="mt-4 text-primary font-bold text-sm"
+          >
+            Find your first meal
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {history.map((meal: any) => (
+            <div key={meal.id} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h4 className="font-bold text-slate-900">{meal.modified_dish_name}</h4>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{meal.date}</p>
+                </div>
+                <div className="bg-primary/10 px-3 py-1 rounded-full">
+                  <span className="text-xs font-bold text-primary">{meal.nutrition.calories} kcal</span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {meal.ingredients.slice(0, 3).map((ing: string, i: number) => (
+                  <span key={i} className="text-[10px] bg-slate-50 text-slate-500 px-2 py-1 rounded-md border border-slate-100">
+                    {ing.split(' ').slice(-1)}
+                  </span>
+                ))}
+                {meal.ingredients.length > 3 && (
+                  <span className="text-[10px] text-slate-400 py-1">+{meal.ingredients.length - 3} more</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
 function ResultScreen({ loading, result, onBack, onLog }: any) {
   if (loading) {
     return (
@@ -625,9 +852,9 @@ function ResultScreen({ loading, result, onBack, onLog }: any) {
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-10">
-          <StatBox label="Calories" value={result.nutrition.calories} unit="kcal" />
-          <StatBox label="Protein" value={result.nutrition.protein} unit="g" />
-          <StatBox label="Fiber" value={result.nutrition.fiber} unit="g" />
+          <StatBox label="Calories" value={result.nutrition?.calories || 0} unit="kcal" />
+          <StatBox label="Protein" value={result.nutrition?.protein || 0} unit="g" />
+          <StatBox label="Fiber" value={result.nutrition?.fiber || 0} unit="g" />
         </div>
 
         <div className="space-y-8">
@@ -637,7 +864,7 @@ function ResultScreen({ loading, result, onBack, onLog }: any) {
               Ingredients
             </h3>
             <ul className="space-y-3">
-              {result.ingredients.map((ing: string, i: number) => (
+              {result.ingredients?.map((ing: string, i: number) => (
                 <li key={i} className="flex gap-3 text-slate-600">
                   <CheckCircle2 size={18} className="text-primary shrink-0 mt-0.5" />
                   <span className="text-sm">{ing}</span>
@@ -652,7 +879,7 @@ function ResultScreen({ loading, result, onBack, onLog }: any) {
               Cooking Steps
             </h3>
             <div className="space-y-6">
-              {result.steps.map((step: string, i: number) => (
+              {result.steps?.map((step: string, i: number) => (
                 <div key={i} className="flex gap-4">
                   <span className="flex-shrink-0 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center font-bold text-slate-400 text-sm">
                     {i + 1}
@@ -666,13 +893,13 @@ function ResultScreen({ loading, result, onBack, onLog }: any) {
           <section className="pt-6 border-t border-slate-100">
             <h3 className="text-lg font-bold mb-4">AI Recalculation Details</h3>
             <div className="space-y-4">
-              <DetailCard icon={<Scale size={20} />} title="Portion Control" desc={result.ai_details.portion_control} />
-              <DetailCard icon={<Zap size={20} />} title="Smart Swaps" desc={result.ai_details.smart_swaps} />
+              <DetailCard icon={<Scale size={20} />} title="Portion Control" desc={result.ai_details?.portion_control || "Balanced portioning based on BMI."} />
+              <DetailCard icon={<Zap size={20} />} title="Smart Swaps" desc={result.ai_details?.smart_swaps || "Heritage-friendly healthy alternatives."} />
             </div>
           </section>
 
           <button 
-            onClick={() => onLog(result.nutrition.calories)}
+            onClick={() => onLog(result.nutrition?.calories || 0)}
             className="w-full bg-[#102216] text-white font-bold py-5 rounded-2xl shadow-xl flex items-center justify-center gap-2 text-lg mt-8"
           >
             Log as Lunch/Dinner
